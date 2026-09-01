@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 4,
+  "appUrl": "https://example.com",
+  "createdAt": "2026-09-01T00:00:00.000Z",
+  "authenticated": false,
+  "coverage": [
+    {
+      "scope": "all",
+      "screenIds": ["home"],
+      "producedBy": { "agent": "crawler", "version": "0.1.0", "at": "2026-09-01T00:00:00.000Z" },
+      "complete": true
+    }
+  ],
+  "screens": [
+    {
+      "id": "home",
+      "name": "Home",
+      "className": "HomePage",
+      "urlTemplate": "/",
+      "signature": "home-signature",
+      "requiresAuth": false,
+      "stale": false,
+      "producedBy": { "agent": "crawler", "version": "0.1.0", "at": "2026-09-01T00:00:00.000Z" },
+      "texts": ["Bienvenido"],
+      "probeValues": ["qa-probe-value"],
+      "validDataRecipe": [
+        {
+          "values": { "email": "qa@example.com" },
+          "producedBy": { "agent": "crawler", "version": "0.1.0", "at": "2026-09-01T00:00:00.000Z" },
+          "verifiedAt": "2026-09-01T00:00:00.000Z"
+        }
+      ],
+      "locators": [
+        {
+          "name": "submitButton",
+          "kind": "button",
+          "accessibleName": "Enviar",
+          "ts": "page.getByRole('button', { name: 'Enviar' })",
+          "count": 1,
+          "producedBy": { "agent": "crawler", "version": "0.1.0", "at": "2026-09-01T00:00:00.000Z" },
+          "verifiedAt": "2026-09-01T00:00:00.000Z"
+        }
+      ],
+      "states": [],
+      "ambiguous": [],
+      "transitions": [],
+      "writeActions": []
+    },
+    {
+      "id": "home~modal",
+      "name": "Home modal",
+      "className": "HomeModal",
+      "urlTemplate": "",
+      "signature": "home-modal-signature",
+      "requiresAuth": false,
+      "stale": false,
+      "producedBy": { "agent": "crawler", "version": "0.1.0", "at": "2026-09-01T00:00:00.000Z" },
+      "texts": [],
+      "probeValues": [],
+      "validDataRecipe": [],
+      "locators": [],
+      "states": [],
+      "ambiguous": [],
+      "transitions": [],
+      "writeActions": [],
+      "reachedBy": {
+        "entryScreenId": "home",
+        "path": [{ "action": "click", "locator": "submitButton", "data": "none" }]
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "scenario-1",
+      "title": "Enviar formulario",
+      "screenId": "home",
+      "involvedScreens": ["home"],
+      "rationale": "Cubre el flujo principal de envio",
+      "tags": ["smoke"],
+      "producedBy": { "agent": "redactor", "version": "0.1.0", "at": "2026-09-01T00:00:00.000Z" }
+    }
+  ],
+  "stats": {
+    "screens": 2,
+    "locators": 1,
+    "ambiguous": 0,
+    "durationMs": 1200
+  }
+}
