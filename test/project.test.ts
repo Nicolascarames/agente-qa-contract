@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ensureProject, parseProjectConfig, projectPaths } from "../src/project.js";
+import { ensureProject, LoginRecipeSchema, parseProjectConfig, projectPaths } from "../src/project.js";
 
 describe("parseProjectConfig", () => {
   it("acepta una config válida y aplica los defaults de limits", () => {
@@ -29,6 +29,72 @@ describe("parseProjectConfig", () => {
       throw new Error("se esperaba ok: false");
     }
     expect(result.issues[0]?.path).toBe("environment");
+  });
+
+  it("sigue aceptando una config sin loginRecipe (retrocompatibilidad)", () => {
+    const result = parseProjectConfig({
+      schemaVersion: 1,
+      appUrl: "https://example.com",
+      environment: "dev",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      throw new Error("se esperaba ok: true");
+    }
+    expect(result.config.loginRecipe).toBeUndefined();
+  });
+
+  it("acepta una config con loginRecipe válida", () => {
+    const result = parseProjectConfig({
+      schemaVersion: 1,
+      appUrl: "https://example.com",
+      environment: "dev",
+      loginRecipe: {
+        url: "https://example.com/login",
+        usernameLocator: "#username",
+        passwordLocator: "#password",
+        submitLocator: "button[type=submit]",
+        successCheck: { kind: "url", value: "/dashboard" },
+      },
+    });
+    expect(result.ok).toBe(true);
+  });
+});
+
+describe("LoginRecipeSchema", () => {
+  const validRecipe = {
+    url: "https://example.com/login",
+    usernameLocator: "#username",
+    passwordLocator: "#password",
+    submitLocator: "button[type=submit]",
+    successCheck: { kind: "url", value: "/dashboard" },
+  };
+
+  it("acepta una receta válida", () => {
+    expect(LoginRecipeSchema.safeParse(validRecipe).success).toBe(true);
+  });
+
+  it("rechaza una receta con un campo obligatorio ausente", () => {
+    const withoutPassword = {
+      url: validRecipe.url,
+      usernameLocator: validRecipe.usernameLocator,
+      submitLocator: validRecipe.submitLocator,
+      successCheck: validRecipe.successCheck,
+    };
+    expect(LoginRecipeSchema.safeParse(withoutPassword).success).toBe(false);
+  });
+
+  it("rechaza campos extra por el .strict()", () => {
+    const result = LoginRecipeSchema.safeParse({ ...validRecipe, password: "secret_sauce" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rechaza un successCheck.kind fuera de 'url' | 'text'", () => {
+    const result = LoginRecipeSchema.safeParse({
+      ...validRecipe,
+      successCheck: { kind: "cookie", value: "session" },
+    });
+    expect(result.success).toBe(false);
   });
 });
 

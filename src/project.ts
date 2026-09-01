@@ -34,6 +34,27 @@ export function projectPaths(rootDir: string): {
 
 export const GITIGNORE_LINES = [".agente-qa/.env", ".agente-qa/state/", "playwright-report/", "test-results/"];
 
+/**
+ * Dónde escribir usuario y contraseña para pasar el login, nunca los valores en sí
+ * (esos viven en `.agente-qa/.env`, fuera del contrato).
+ */
+export const LoginRecipeSchema = z
+  .object({
+    url: z.string().url(),
+    usernameLocator: z.string().min(1),
+    passwordLocator: z.string().min(1),
+    submitLocator: z.string().min(1),
+    successCheck: z
+      .object({
+        kind: z.enum(["url", "text"]),
+        value: z.string().min(1),
+      })
+      .strict(),
+  })
+  .strict();
+
+export type LoginRecipe = z.infer<typeof LoginRecipeSchema>;
+
 export const ProjectConfigSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -46,6 +67,7 @@ export const ProjectConfigSchema = z
         maxCostUsd: z.number().positive().default(2),
       })
       .default({ maxIterations: 40, maxScreens: 25, maxCostUsd: 2 }),
+    loginRecipe: LoginRecipeSchema.optional(),
   })
   .strict();
 
