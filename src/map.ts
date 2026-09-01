@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EnvironmentSchema } from "./common.js";
 
 /**
  * Quién produjo un dato del mapa y cuándo. Cada pieza del ecosistema que
@@ -75,12 +76,79 @@ const ScreenReachedBySchema = z
   })
   .strict();
 
-/**
- * `states`, `ambiguous`, `transitions` y `writeActions` NO están detallados por esta spec.
- * TODO(spec-2): §8.2 no detalla este campo; lo cierra la spec de mapeador-mcp, que es quien lo produce.
- * Excepción deliberada a `.strict()`: son placeholders de forma abierta hasta esa spec.
- */
-const OpenPlaceholderEntrySchema = z.object({}).passthrough();
+export const ScreenStateSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    kind: z.enum(["modal", "drawer", "tab", "expanded", "toast", "other"]),
+    enteredBy: z
+      .object({
+        action: z.enum(["click", "hover", "press"]),
+        locatorName: z.string().min(1),
+      })
+      .strict(),
+    producedBy: ProvenanceSchema,
+    verifiedAt: z.string(),
+  })
+  .strict();
+
+export const AmbiguousCandidateSchema = z
+  .object({
+    /** El identificador que habría tenido de no ser ambiguo. */
+    name: z.string().min(1),
+    kind: LocatorEntrySchema.shape.kind,
+    accessibleName: z.string().optional(),
+    /** La expresión que resultó ambigua. */
+    ts: z.string().min(1),
+    /** Razón de no entrar como LocatorEntry: ese exige count === 1. */
+    count: z.number().int().min(2),
+    stateId: z.string().optional(),
+    producedBy: ProvenanceSchema,
+    seenAt: z.string(),
+  })
+  .strict();
+
+export const TransitionSchema = z
+  .object({
+    id: z.string().min(1),
+    toScreenId: z.string().min(1),
+    action: z.enum(["click", "fill", "select", "press", "navigate", "submit"]),
+    /** Nombre de un LocatorEntry de esta pantalla. Ausente solo si action === "navigate". */
+    locatorName: z.string().min(1).optional(),
+    /** Claves de datos usadas en la transición; nunca secretos. */
+    data: z.record(z.string(), z.string()).optional(),
+    fromStateId: z.string().optional(),
+    producedBy: ProvenanceSchema,
+    /** Solo se escribe si la transición se recorrió de verdad. */
+    verifiedAt: z.string(),
+  })
+  .strict()
+  .superRefine((transition, ctx) => {
+    if (transition.action !== "navigate" && transition.locatorName === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["locatorName"],
+        message: "locatorName es obligatorio salvo cuando action es \"navigate\"",
+      });
+    }
+  });
+
+export const WriteActionSchema = z
+  .object({
+    id: z.string().min(1),
+    kind: z.enum(["create", "update", "delete", "submit"]),
+    locatorName: z.string().min(1),
+    stateId: z.string().optional(),
+    /** Qué campos se escriben. Nunca sus valores. */
+    dataKeys: z.array(z.string()),
+    /** Dónde se considera permitida esta escritura. */
+    environments: z.array(EnvironmentSchema),
+    /** true solo si se ejecutó y se comprobó el efecto. */
+    confirmed: z.boolean(),
+    producedBy: ProvenanceSchema,
+    at: z.string(),
+  })
+  .strict();
 
 export const ScreenSchema = z
   .object({
@@ -98,14 +166,10 @@ export const ScreenSchema = z
     probeValues: z.array(z.string()),
     validDataRecipe: z.array(DataRecipeEntrySchema),
     locators: z.array(LocatorEntrySchema),
-    // TODO(spec-2): §8.2 no detalla este campo; lo cierra la spec de mapeador-mcp, que es quien lo produce.
-    states: z.array(OpenPlaceholderEntrySchema),
-    // TODO(spec-2): §8.2 no detalla este campo; lo cierra la spec de mapeador-mcp, que es quien lo produce.
-    ambiguous: z.array(OpenPlaceholderEntrySchema),
-    // TODO(spec-2): §8.2 no detalla este campo; lo cierra la spec de mapeador-mcp, que es quien lo produce.
-    transitions: z.array(OpenPlaceholderEntrySchema),
-    // TODO(spec-2): §8.2 no detalla este campo; lo cierra la spec de mapeador-mcp, que es quien lo produce.
-    writeActions: z.array(OpenPlaceholderEntrySchema),
+    states: z.array(ScreenStateSchema),
+    ambiguous: z.array(AmbiguousCandidateSchema),
+    transitions: z.array(TransitionSchema),
+    writeActions: z.array(WriteActionSchema),
     /** Presente solo en una vista sin URL propia: cómo se llega a ella desde `entryScreenId`. */
     reachedBy: ScreenReachedBySchema.optional(),
   })
@@ -157,5 +221,9 @@ export type CoverageEntry = z.infer<typeof CoverageEntrySchema>;
 export type LocatorEntry = z.infer<typeof LocatorEntrySchema>;
 export type DataRecipeEntry = z.infer<typeof DataRecipeEntrySchema>;
 export type ScenarioCandidate = z.infer<typeof ScenarioCandidateSchema>;
+export type ScreenState = z.infer<typeof ScreenStateSchema>;
+export type AmbiguousCandidate = z.infer<typeof AmbiguousCandidateSchema>;
+export type Transition = z.infer<typeof TransitionSchema>;
+export type WriteAction = z.infer<typeof WriteActionSchema>;
 export type Screen = z.infer<typeof ScreenSchema>;
 export type AppMap = z.infer<typeof AppMapSchema>;

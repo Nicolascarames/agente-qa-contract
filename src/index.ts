@@ -1,6 +1,7 @@
 import { AppMapSchema, type AppMap } from "./map.js";
 
 export * from "./map.js";
+export { EnvironmentSchema, type Environment } from "./common.js";
 
 export interface ParseIssue {
   path: string;
