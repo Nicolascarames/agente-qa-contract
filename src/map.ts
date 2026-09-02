@@ -16,13 +16,21 @@ export const ProvenanceSchema = z
 
 export const CoverageEntrySchema = z
   .object({
-    scope: z.enum(["all", "goal", "units"]),
+    scope: z.enum(["all", "goal", "units", "recorded"]),
     goal: z.string().optional(),
     screenIds: z.array(z.string()),
     producedBy: ProvenanceSchema,
     complete: z.boolean(),
   })
   .strict();
+
+/** Set cuando el locator usa un selector posicional (`.nth()`, `.first()`, `.last()`): explica por qué. */
+export const LocatorFragilitySchema = z
+  .object({
+    reason: z.string(),
+  })
+  .strict();
+export type LocatorFragility = z.infer<typeof LocatorFragilitySchema>;
 
 export const LocatorEntrySchema = z
   .object({
@@ -38,6 +46,7 @@ export const LocatorEntrySchema = z
     attributes: z.record(z.string(), z.string()).optional(),
     producedBy: ProvenanceSchema,
     verifiedAt: z.string(),
+    fragile: LocatorFragilitySchema.optional(),
   })
   .strict();
 

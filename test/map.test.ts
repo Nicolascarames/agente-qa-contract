@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { parseAppMap } from "../src/index.js";
+import { CoverageEntrySchema, LocatorEntrySchema, parseAppMap } from "../src/index.js";
 
 const fixturesDir = new URL("../fixtures/", import.meta.url);
 
@@ -38,5 +38,49 @@ describe("parseAppMap", () => {
       throw new Error("se esperaba ok: false");
     }
     expect(result.issues[0]?.path).toBe(expectedPath);
+  });
+});
+
+describe("LocatorEntrySchema", () => {
+  const baseLocator = {
+    name: "botón enviar",
+    kind: "button" as const,
+    ts: "getByRole('button', { name: 'Enviar' }).nth(1)",
+    count: 1 as const,
+    producedBy: {
+      agent: "mapeador-mcp" as const,
+      version: "0.1.0",
+      at: "2026-09-02T10:00:00.000Z",
+    },
+    verifiedAt: "2026-09-02T10:00:00.000Z",
+  };
+
+  it("acepta un locator con fragile y su motivo", () => {
+    const result = LocatorEntrySchema.safeParse({
+      ...baseLocator,
+      fragile: { reason: "selector posicional .nth(1), no hay atributo estable que lo distinga" },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("acepta un locator sin fragile (campo opcional)", () => {
+    const result = LocatorEntrySchema.safeParse(baseLocator);
+    expect(result.success).toBe(true);
+  });
+});
+
+describe("CoverageEntrySchema", () => {
+  it("acepta scope: recorded", () => {
+    const result = CoverageEntrySchema.safeParse({
+      scope: "recorded",
+      screenIds: ["home"],
+      producedBy: {
+        agent: "mapeador-mcp" as const,
+        version: "0.1.0",
+        at: "2026-09-02T10:00:00.000Z",
+      },
+      complete: true,
+    });
+    expect(result.success).toBe(true);
   });
 });
