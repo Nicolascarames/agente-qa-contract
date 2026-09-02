@@ -68,6 +68,8 @@ export const ProjectConfigSchema = z
       })
       .default({ maxIterations: 40, maxScreens: 25, maxCostUsd: 2 }),
     loginRecipe: LoginRecipeSchema.optional(),
+    /** Atributo que usa el motor de localizadores de Playwright (`--test-id-attribute` del MCP). Por defecto `"data-testid"` si no se declara. */
+    testIdAttribute: z.string().min(1).optional(),
   })
   .strict();
 

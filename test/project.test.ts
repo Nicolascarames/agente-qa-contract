@@ -44,6 +44,33 @@ describe("parseProjectConfig", () => {
     expect(result.config.loginRecipe).toBeUndefined();
   });
 
+  it("sigue aceptando una config sin testIdAttribute (retrocompatibilidad)", () => {
+    const result = parseProjectConfig({
+      schemaVersion: 1,
+      appUrl: "https://example.com",
+      environment: "dev",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      throw new Error("se esperaba ok: true");
+    }
+    expect(result.config.testIdAttribute).toBeUndefined();
+  });
+
+  it("acepta una config con testIdAttribute válido", () => {
+    const result = parseProjectConfig({
+      schemaVersion: 1,
+      appUrl: "https://example.com",
+      environment: "dev",
+      testIdAttribute: "data-qa",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      throw new Error("se esperaba ok: true");
+    }
+    expect(result.config.testIdAttribute).toBe("data-qa");
+  });
+
   it("acepta una config con loginRecipe válida", () => {
     const result = parseProjectConfig({
       schemaVersion: 1,
