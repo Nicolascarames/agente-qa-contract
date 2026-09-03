@@ -83,4 +83,18 @@ describe("CoverageEntrySchema", () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it("acepta scope: auto-recorded", () => {
+    const result = CoverageEntrySchema.safeParse({
+      scope: "auto-recorded",
+      screenIds: ["home"],
+      producedBy: {
+        agent: "mapeador-mcp" as const,
+        version: "0.1.0",
+        at: "2026-09-02T10:00:00.000Z",
+      },
+      complete: true,
+    });
+    expect(result.success).toBe(true);
+  });
 });
