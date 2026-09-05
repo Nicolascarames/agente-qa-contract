@@ -4,11 +4,21 @@ import { EnvironmentSchema } from "./common.js";
 /**
  * Quién produjo un dato del mapa y cuándo. Cada pieza del ecosistema que
  * escribe en `map.json` (crawler, mapeador-mcp, redactor, redactor-mcp,
- * generador, generador-mcp) se declara como autor de lo que aporta.
+ * generador, generador-mcp) se declara como autor de lo que aporta, igual
+ * que una corrección manual de localizador hecha desde la interfaz web
+ * (web-manual).
  */
 export const ProvenanceSchema = z
   .object({
-    agent: z.enum(["crawler", "mapeador-mcp", "redactor", "redactor-mcp", "generador", "generador-mcp"]),
+    agent: z.enum([
+      "crawler",
+      "mapeador-mcp",
+      "redactor",
+      "redactor-mcp",
+      "generador",
+      "generador-mcp",
+      "web-manual",
+    ]),
     version: z.string().min(1),
     at: z.string().datetime(),
   })
