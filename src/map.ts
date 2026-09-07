@@ -26,7 +26,7 @@ export const ProvenanceSchema = z
 
 export const CoverageEntrySchema = z
   .object({
-    scope: z.enum(["all", "goal", "units", "recorded", "auto-recorded"]),
+    scope: z.enum(["all", "goal", "units", "recorded", "auto-recorded", "revisar"]),
     goal: z.string().optional(),
     screenIds: z.array(z.string()),
     producedBy: ProvenanceSchema,
