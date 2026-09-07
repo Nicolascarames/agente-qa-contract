@@ -42,6 +42,19 @@ export const LocatorFragilitySchema = z
   .strict();
 export type LocatorFragility = z.infer<typeof LocatorFragilitySchema>;
 
+/** Cómo se obtuvo el locator: determina qué tan fiable es (ver `confidenceForStrategy`). */
+export const LocatorStrategySchema = z.enum([
+  "recorded",
+  "generated",
+  "role",
+  "label",
+  "testid",
+  "attribute",
+  "container",
+  "positional",
+]);
+export type LocatorStrategy = z.infer<typeof LocatorStrategySchema>;
+
 export const LocatorEntrySchema = z
   .object({
     name: z.string().min(1),
@@ -57,8 +70,30 @@ export const LocatorEntrySchema = z
     producedBy: ProvenanceSchema,
     verifiedAt: z.string(),
     fragile: LocatorFragilitySchema.optional(),
+    strategy: LocatorStrategySchema.optional(),
   })
   .strict();
+
+/**
+ * Traduce la estrategia con la que se obtuvo un locator a un nivel de confianza.
+ * Tabla fija, no depende de más contexto: recorded/generated/role/testid → alta;
+ * label/attribute/container → media; positional → baja.
+ */
+export function confidenceForStrategy(strategy: LocatorStrategy): "alta" | "media" | "baja" {
+  switch (strategy) {
+    case "recorded":
+    case "generated":
+    case "role":
+    case "testid":
+      return "alta";
+    case "label":
+    case "attribute":
+    case "container":
+      return "media";
+    case "positional":
+      return "baja";
+  }
+}
 
 export const DataRecipeEntrySchema = z
   .object({

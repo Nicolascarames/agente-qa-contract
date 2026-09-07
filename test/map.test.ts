@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { CoverageEntrySchema, LocatorEntrySchema, parseAppMap } from "../src/index.js";
+import { confidenceForStrategy, CoverageEntrySchema, LocatorEntrySchema, parseAppMap } from "../src/index.js";
 
 const fixturesDir = new URL("../fixtures/", import.meta.url);
 
@@ -66,6 +66,21 @@ describe("LocatorEntrySchema", () => {
   it("acepta un locator sin fragile (campo opcional)", () => {
     const result = LocatorEntrySchema.safeParse(baseLocator);
     expect(result.success).toBe(true);
+  });
+});
+
+describe("confidenceForStrategy", () => {
+  it.each([
+    ["recorded", "alta"],
+    ["generated", "alta"],
+    ["role", "alta"],
+    ["testid", "alta"],
+    ["label", "media"],
+    ["attribute", "media"],
+    ["container", "media"],
+    ["positional", "baja"],
+  ] as const)("%s -> %s", (strategy, expected) => {
+    expect(confidenceForStrategy(strategy)).toBe(expected);
   });
 });
 
