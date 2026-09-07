@@ -1,6 +1,6 @@
 {
   "name": "agente-qa-contract",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Contrato compartido (esquemas Zod) entre las piezas del ecosistema Agente-QA: map.json y ficheros .feature.",
   "type": "module",
   "license": "MIT",

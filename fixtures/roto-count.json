@@ -56,7 +56,7 @@
           "kind": "button",
           "accessibleName": "Enviar",
           "ts": "page.getByRole('button', { name: 'Enviar' })",
-          "count": 2,
+          "count": 0,
           "producedBy": {
             "agent": "crawler",
             "version": "0.1.0",

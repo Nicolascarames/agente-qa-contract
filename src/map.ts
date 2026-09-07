@@ -61,7 +61,14 @@ export const LocatorEntrySchema = z
     kind: z.enum(["input", "button", "link", "select", "text", "heading"]),
     accessibleName: z.string().optional(),
     ts: z.string().min(1),
-    count: z.literal(1),
+    /**
+     * Cuántos elementos matchea `ts` en la página real. Normalmente 1 (un elemento único),
+     * pero puede ser mayor cuando la entrada representa un GRUPO de elementos idénticos
+     * (p.ej. un botón "Editar" repetido por fila de una tabla) acotado por un patrón de
+     * localizador verificado por contenedor: "verificado" para un grupo significa que el
+     * patrón dio `count()` igual al tamaño real del grupo, no que sea ambiguo.
+     */
+    count: z.number().int().min(1),
     /** Set cuando el candidato en bruto matcheaba más de un elemento y una región lo acotó. */
     disambiguatedBy: z.string().optional(),
     /** Set cuando el locator solo existe en un estado no-por-defecto de la pantalla. */
@@ -154,7 +161,7 @@ export const AmbiguousCandidateSchema = z
     accessibleName: z.string().optional(),
     /** La expresión que resultó ambigua. */
     ts: z.string().min(1),
-    /** Razón de no entrar como LocatorEntry: ese exige count === 1. */
+    /** Razón de no entrar como LocatorEntry: ni un elemento único ni un grupo verificado con count() real. */
     count: z.number().int().min(2),
     stateId: z.string().optional(),
     producedBy: ProvenanceSchema,

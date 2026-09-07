@@ -46,7 +46,7 @@ describe("LocatorEntrySchema", () => {
     name: "botón enviar",
     kind: "button" as const,
     ts: "getByRole('button', { name: 'Enviar' }).nth(1)",
-    count: 1 as const,
+    count: 1,
     producedBy: {
       agent: "mapeador-mcp" as const,
       version: "0.1.0",
@@ -65,6 +65,16 @@ describe("LocatorEntrySchema", () => {
 
   it("acepta un locator sin fragile (campo opcional)", () => {
     const result = LocatorEntrySchema.safeParse(baseLocator);
+    expect(result.success).toBe(true);
+  });
+
+  it("acepta un locator con count > 1 (grupo de elementos idénticos verificado por patrón)", () => {
+    const result = LocatorEntrySchema.safeParse({
+      ...baseLocator,
+      name: "botón editar (fila)",
+      ts: "getByRole('row').getByRole('button', { name: 'Editar' })",
+      count: 5,
+    });
     expect(result.success).toBe(true);
   });
 });
