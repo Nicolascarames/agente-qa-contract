@@ -52,6 +52,7 @@ export const LocatorStrategySchema = z.enum([
   "attribute",
   "container",
   "positional",
+  "human",
 ]);
 export type LocatorStrategy = z.infer<typeof LocatorStrategySchema>;
 
@@ -83,7 +84,7 @@ export const LocatorEntrySchema = z
 
 /**
  * Traduce la estrategia con la que se obtuvo un locator a un nivel de confianza.
- * Tabla fija, no depende de más contexto: recorded/generated/role/testid → alta;
+ * Tabla fija, no depende de más contexto: recorded/generated/role/testid/human → alta;
  * label/attribute/container → media; positional → baja.
  */
 export function confidenceForStrategy(strategy: LocatorStrategy): "alta" | "media" | "baja" {
@@ -92,6 +93,7 @@ export function confidenceForStrategy(strategy: LocatorStrategy): "alta" | "medi
     case "generated":
     case "role":
     case "testid":
+    case "human":
       return "alta";
     case "label":
     case "attribute":

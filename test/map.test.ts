@@ -85,6 +85,7 @@ describe("confidenceForStrategy", () => {
     ["generated", "alta"],
     ["role", "alta"],
     ["testid", "alta"],
+    ["human", "alta"],
     ["label", "media"],
     ["attribute", "media"],
     ["container", "media"],
