@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ensureProject, LoginRecipeSchema, parseProjectConfig, projectPaths } from "../src/project.js";
+import { ensureProject, GITIGNORE_LINES, LoginRecipeSchema, parseProjectConfig, projectPaths } from "../src/project.js";
 
 describe("parseProjectConfig", () => {
   it("acepta una config válida y aplica los defaults de limits", () => {
@@ -125,6 +125,20 @@ describe("LoginRecipeSchema", () => {
   });
 });
 
+describe("projectPaths", () => {
+  it("incluye capturasDir bajo .agente-qa/capturas", () => {
+    const rootDir = path.join(tmpdir(), "agente-qa-contract-paths-fixture");
+    const paths = projectPaths(rootDir);
+    expect(paths.capturasDir).toBe(path.join(rootDir, ".agente-qa", "capturas"));
+  });
+});
+
+describe("GITIGNORE_LINES", () => {
+  it("incluye .agente-qa/capturas/", () => {
+    expect(GITIGNORE_LINES).toContain(".agente-qa/capturas/");
+  });
+});
+
 describe("ensureProject", () => {
   let rootDir: string;
 
@@ -152,6 +166,7 @@ describe("ensureProject", () => {
     const gitignore = await readFile(path.join(rootDir, ".gitignore"), "utf8");
     expect(gitignore).toContain(".agente-qa/.env");
     expect(gitignore).toContain(".agente-qa/state/");
+    expect(gitignore).toContain(".agente-qa/capturas/");
     expect(gitignore).toContain("playwright-report/");
     expect(gitignore).toContain("test-results/");
   });
@@ -191,7 +206,13 @@ describe("ensureProject", () => {
     const content = await readFile(gitignorePath, "utf8");
     const lines = content.split(/\r?\n/).filter((line) => line.length > 0);
     expect(lines).toEqual(
-      expect.arrayContaining([".agente-qa/.env", ".agente-qa/state/", "playwright-report/", "test-results/"])
+      expect.arrayContaining([
+        ".agente-qa/.env",
+        ".agente-qa/state/",
+        ".agente-qa/capturas/",
+        "playwright-report/",
+        "test-results/",
+      ])
     );
     expect(new Set(lines).size).toBe(lines.length);
   });

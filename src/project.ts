@@ -16,6 +16,7 @@ export function projectPaths(rootDir: string): {
   featuresDir: string;
   stateDir: string;
   memoryPath: string;
+  capturasDir: string;
 } {
   const dir = path.join(rootDir, PROJECT_DIR);
   const mapDir = path.join(dir, "map");
@@ -29,10 +30,17 @@ export function projectPaths(rootDir: string): {
     featuresDir: path.join(dir, "features"),
     stateDir: path.join(dir, "state"),
     memoryPath: path.join(dir, "memory.json"),
+    capturasDir: path.join(dir, "capturas"),
   };
 }
 
-export const GITIGNORE_LINES = [".agente-qa/.env", ".agente-qa/state/", "playwright-report/", "test-results/"];
+export const GITIGNORE_LINES = [
+  ".agente-qa/.env",
+  ".agente-qa/state/",
+  ".agente-qa/capturas/",
+  "playwright-report/",
+  "test-results/",
+];
 
 /**
  * Dónde escribir usuario y contraseña para pasar el login, nunca los valores en sí
