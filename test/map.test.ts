@@ -45,6 +45,7 @@ describe("LocatorEntrySchema", () => {
   const baseLocator = {
     name: "botón enviar",
     kind: "button" as const,
+    status: "verified" as const,
     ts: "getByRole('button', { name: 'Enviar' }).nth(1)",
     count: 1,
     producedBy: {
@@ -76,6 +77,53 @@ describe("LocatorEntrySchema", () => {
       count: 5,
     });
     expect(result.success).toBe(true);
+  });
+
+  it("acepta un locator status: verified con ts, count y verifiedAt presentes", () => {
+    const result = LocatorEntrySchema.safeParse(baseLocator);
+    expect(result.success).toBe(true);
+  });
+
+  function withoutFields(fields: Array<keyof typeof baseLocator>): Record<string, unknown> {
+    const copy: Record<string, unknown> = { ...baseLocator };
+    for (const field of fields) {
+      delete copy[field];
+    }
+    return copy;
+  }
+
+  it.each(["ts", "count", "verifiedAt"] as const)(
+    "rechaza un locator status: verified sin %s",
+    (field) => {
+      const result = LocatorEntrySchema.safeParse(withoutFields([field]));
+      expect(result.success).toBe(false);
+    }
+  );
+
+  it("acepta un locator status: seen sin ts, count ni verifiedAt", () => {
+    const result = LocatorEntrySchema.safeParse({
+      ...withoutFields(["ts", "count", "verifiedAt"]),
+      status: "seen" as const,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it.each(["ts", "count", "verifiedAt"] as const)(
+    "rechaza un locator status: seen que trae %s",
+    (field) => {
+      const seen: Record<string, unknown> = {
+        ...withoutFields(["ts", "count", "verifiedAt"]),
+        status: "seen" as const,
+      };
+      seen[field] = baseLocator[field];
+      const result = LocatorEntrySchema.safeParse(seen);
+      expect(result.success).toBe(false);
+    }
+  );
+
+  it("rechaza un locator sin status (formato viejo)", () => {
+    const result = LocatorEntrySchema.safeParse(withoutFields(["status"]));
+    expect(result.success).toBe(false);
   });
 });
 

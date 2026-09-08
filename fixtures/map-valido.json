@@ -35,6 +35,7 @@
           "name": "submitButton",
           "kind": "button",
           "accessibleName": "Enviar",
+          "status": "verified",
           "ts": "page.getByRole('button', { name: 'Enviar' })",
           "count": 1,
           "producedBy": { "agent": "crawler", "version": "0.1.0", "at": "2026-09-01T00:00:00.000Z" },

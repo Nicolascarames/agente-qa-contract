@@ -61,26 +61,55 @@ export const LocatorEntrySchema = z
     name: z.string().min(1),
     kind: z.enum(["input", "button", "link", "select", "text", "heading"]),
     accessibleName: z.string().optional(),
-    ts: z.string().min(1),
+    /** "verified": localizador confirmado en la página real. "seen": elemento detectado sin candidato con count >= 2. */
+    status: z.enum(["verified", "seen"]),
+    /** Obligatorio solo si status === "verified": un "seen" no tiene expresión Playwright todavía. */
+    ts: z.string().min(1).optional(),
     /**
      * Cuántos elementos matchea `ts` en la página real. Normalmente 1 (un elemento único),
      * pero puede ser mayor cuando la entrada representa un GRUPO de elementos idénticos
      * (p.ej. un botón "Editar" repetido por fila de una tabla) acotado por un patrón de
      * localizador verificado por contenedor: "verificado" para un grupo significa que el
      * patrón dio `count()` igual al tamaño real del grupo, no que sea ambiguo.
+     * Obligatorio solo si status === "verified": sin ts no hay nada que contar.
      */
-    count: z.number().int().min(1),
+    count: z.number().int().min(1).optional(),
     /** Set cuando el candidato en bruto matcheaba más de un elemento y una región lo acotó. */
     disambiguatedBy: z.string().optional(),
     /** Set cuando el locator solo existe en un estado no-por-defecto de la pantalla. */
     stateId: z.string().optional(),
     attributes: z.record(z.string(), z.string()).optional(),
     producedBy: ProvenanceSchema,
-    verifiedAt: z.string(),
+    /** Obligatorio solo si status === "verified". */
+    verifiedAt: z.string().optional(),
     fragile: LocatorFragilitySchema.optional(),
     strategy: LocatorStrategySchema.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((entry, ctx) => {
+    const verificationFields = ["ts", "count", "verifiedAt"] as const;
+    if (entry.status === "verified") {
+      for (const field of verificationFields) {
+        if (entry[field] === undefined) {
+          ctx.addIssue({
+            code: "custom",
+            path: [field],
+            message: `${field} es obligatorio cuando status es "verified"`,
+          });
+        }
+      }
+    } else {
+      for (const field of verificationFields) {
+        if (entry[field] !== undefined) {
+          ctx.addIssue({
+            code: "custom",
+            path: [field],
+            message: `${field} debe estar ausente cuando status es "seen"`,
+          });
+        }
+      }
+    }
+  });
 
 /**
  * Traduce la estrategia con la que se obtuvo un locator a un nivel de confianza.

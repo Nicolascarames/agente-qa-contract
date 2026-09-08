@@ -55,6 +55,7 @@
           "name": "submitButton",
           "kind": "button",
           "accessibleName": "Enviar",
+          "status": "verified",
           "ts": "page.getByRole('button', { name: 'Enviar' })",
           "count": 0,
           "producedBy": {
