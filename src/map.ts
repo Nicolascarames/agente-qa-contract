@@ -56,6 +56,21 @@ export const LocatorStrategySchema = z.enum([
 ]);
 export type LocatorStrategy = z.infer<typeof LocatorStrategySchema>;
 
+/**
+ * Bloque 6 de la spec A: hueco parametrizado dentro de `LocatorEntry.ts` cuando la entrada
+ * representa un GRUPO de hermanos casi idénticos (`count > 1`) — `{{nombre}}` en `ts` se
+ * sustituye por el texto propio de cada hermano (`ejemplos`) para aislar uno solo. Cada
+ * `ejemplos[i]` está verificado por `mapeador-mcp` (`buildGroupPattern`): sustituido en la
+ * plantilla, tiene que dar `count === 1` en la página real, o el grupo no entra parametrizado.
+ */
+export const LocatorParameterSchema = z
+  .object({
+    nombre: z.string().min(1),
+    ejemplos: z.array(z.string().min(1)).min(1),
+  })
+  .strict();
+export type LocatorParameter = z.infer<typeof LocatorParameterSchema>;
+
 export const LocatorEntrySchema = z
   .object({
     name: z.string().min(1),
@@ -84,6 +99,8 @@ export const LocatorEntrySchema = z
     verifiedAt: z.string().optional(),
     fragile: LocatorFragilitySchema.optional(),
     strategy: LocatorStrategySchema.optional(),
+    /** Set cuando `ts` lleva un hueco `{{nombre}}` (grupo parametrizado, Bloque 6 de la spec A). */
+    parameter: LocatorParameterSchema.optional(),
   })
   .strict()
   .superRefine((entry, ctx) => {
