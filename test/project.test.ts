@@ -71,6 +71,59 @@ describe("parseProjectConfig", () => {
     expect(result.config.testIdAttribute).toBe("data-qa");
   });
 
+  it("sigue aceptando una config sin llm (retrocompatibilidad, proyectos anteriores a la Spec B)", () => {
+    const result = parseProjectConfig({
+      schemaVersion: 1,
+      appUrl: "https://example.com",
+      environment: "dev",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      throw new Error("se esperaba ok: true");
+    }
+    expect(result.config.llm).toBeUndefined();
+  });
+
+  it("acepta llm en modalidad api con proveedor y modelo", () => {
+    const result = parseProjectConfig({
+      schemaVersion: 1,
+      appUrl: "https://example.com",
+      environment: "dev",
+      llm: { modalidad: "api", proveedor: "anthropic", modelo: "claude-sonnet-5" },
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("rechaza llm en modalidad api sin proveedor ni modelo", () => {
+    const result = parseProjectConfig({
+      schemaVersion: 1,
+      appUrl: "https://example.com",
+      environment: "dev",
+      llm: { modalidad: "api" },
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  it("acepta llm en modalidad suscripcion sin proveedor ni modelo", () => {
+    const result = parseProjectConfig({
+      schemaVersion: 1,
+      appUrl: "https://example.com",
+      environment: "dev",
+      llm: { modalidad: "suscripcion" },
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("rechaza llm en modalidad suscripcion con proveedor o modelo declarados", () => {
+    const result = parseProjectConfig({
+      schemaVersion: 1,
+      appUrl: "https://example.com",
+      environment: "dev",
+      llm: { modalidad: "suscripcion", proveedor: "anthropic", modelo: "claude-sonnet-5" },
+    });
+    expect(result.ok).toBe(false);
+  });
+
   it("acepta una config con loginRecipe válida", () => {
     const result = parseProjectConfig({
       schemaVersion: 1,

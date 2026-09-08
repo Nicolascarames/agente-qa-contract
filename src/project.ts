@@ -63,6 +63,33 @@ export const LoginRecipeSchema = z
 
 export type LoginRecipe = z.infer<typeof LoginRecipeSchema>;
 
+export const LLM_PROVIDERS = ["anthropic", "openai", "google", "groq"] as const;
+export type LlmProvider = (typeof LLM_PROVIDERS)[number];
+
+/**
+ * Spec B, Bloque 1: una sola modalidad activa, nunca varias — fuera perfiles, roles y modos de
+ * coste. `proveedor`/`modelo` obligatorios con `"api"`, prohibidos con `"suscripcion"` (la
+ * suscripción de Claude Code no declara ni proveedor ni modelo propios).
+ */
+export const LlmConfigSchema = z
+  .object({
+    modalidad: z.enum(["api", "suscripcion"]),
+    proveedor: z.enum(LLM_PROVIDERS).optional(),
+    modelo: z.string().min(1).optional(),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      value.modalidad === "api"
+        ? value.proveedor !== undefined && value.modelo !== undefined
+        : value.proveedor === undefined && value.modelo === undefined,
+    {
+      message: 'Con modalidad "api", "proveedor" y "modelo" son obligatorios; con "suscripcion", ninguno de los dos se declara.',
+    }
+  );
+
+export type LlmConfig = z.infer<typeof LlmConfigSchema>;
+
 export const ProjectConfigSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -78,6 +105,13 @@ export const ProjectConfigSchema = z
     loginRecipe: LoginRecipeSchema.optional(),
     /** Atributo que usa el motor de localizadores de Playwright (`--test-id-attribute` del MCP). Por defecto `"data-testid"` si no se declara. */
     testIdAttribute: z.string().min(1).optional(),
+    /**
+     * Ausente en proyectos creados antes de la Spec B (`ensureProject` no lo pregunta):
+     * `agente-qa-mcp config` lo rellena la primera vez que se ejecuta, o lo migra en silencio
+     * desde el perfil "experto" si encuentra configuración de la forma antigua (perfiles/roles/
+     * modo de coste, resueltos por variables de entorno, nunca guardados aquí).
+     */
+    llm: LlmConfigSchema.optional(),
   })
   .strict();
 
