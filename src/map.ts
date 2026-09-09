@@ -97,6 +97,13 @@ export const LocatorEntrySchema = z
     producedBy: ProvenanceSchema,
     /** Obligatorio solo si status === "verified". */
     verifiedAt: z.string().optional(),
+    /** Set cuando un test Playwright generado confirma este locator en ejecución real. */
+    confirmedByTest: z
+      .object({
+        spec: z.string(),
+        at: z.string(),
+      })
+      .optional(),
     fragile: LocatorFragilitySchema.optional(),
     strategy: LocatorStrategySchema.optional(),
     /** Set cuando `ts` lleva un hueco `{{nombre}}` (grupo parametrizado, Bloque 6 de la spec A). */
